@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Rate {{ university.name }}{% endblock %}
+{% block content %}
+    <style>
+        .rating-form-card {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .rating-form-card h2 {
+            text-align: center;
+            color: #007bff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .rating-input label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .rating-input input[type="radio"] {
+            margin: 0 5px 0 15px;
+        }
+    </style>
+
+    <div class="rating-form-card">
+        <h2>Rate {{ university.name }}</h2>
+        <p>Help us improve our rankings by rating this university based on your experience.</p>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="rating-label">{{ field.label }}</label>
+                    <div class="rating-input">
+                        {{ field }}
+                    </div>
+                </div>
+            {% endfor %}
+            <button type="submit" class="cta-button" style="width:100%">Submit Rating</button>
+        </form>
+    </div>
+{% endblock %}

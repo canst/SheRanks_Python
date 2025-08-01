@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}University Rankings{% endblock %}
+
+{% block content %}
+    <style>
+        .ranking-explanation {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .ranking-explanation h2 {
+            color: #007bff;
+        }
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .search-container input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 50%;
+        }
+        .university-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .university-card h3 {
+            margin: 0;
+            color: #333;
+        }
+        .university-card p {
+            margin: 5px 0;
+            color: #777;
+        }
+        .scores-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .score-badge {
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .ranking-details {
+            text-align: right;
+        }
+        .ranking-details h4 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #007bff;
+        }
+    </style>
+
+    <div class="ranking-explanation">
+        <h2>Global University Rankings</h2>
+        <p>Our ranking is a comprehensive and data-driven score based on user feedback. It is a composite of the following parameters:</p>
+        <div class="scores-container">
+            <span class="score-badge">🛡️ Safety</span>
+            <span class="score-badge">🤝 Inclusivity</span>
+            <span class="score-badge">💬 Student Support</span>
+            <span class="score-badge">🏠 Living Environment</span>
+            <span class="score-badge">⚖️ Gender Equality</span>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <form method="GET" action="{% url 'universities:list' %}">
+            <input type="text" name="q" placeholder="Search for a university..." value="{{ search_query }}">
+            <button type="submit" class="cta-button">Search</button>
+        </form>
+    </div>
+
+    {% for university in universities %}
+        <div class="university-card">
+            <div class="university-info">
+                <h3><a href="{% url 'universities:detail' university.slug %}">{{ university.name }}</a></h3>
+                <p>{{ university.location }}</p>
+                <div class="scores-container">
+                    <span class="score-badge">Safety: {{ university.safety_score|floatformat:1 }}</span>
+                    <span class="score-badge">Inclusivity: {{ university.inclusivity_score|floatformat:1 }}</span>
+                    <span class="score-badge">Support: {{ university.support_score|floatformat:1 }}</span>
+                    <span class="score-badge">Living: {{ university.living_score|floatformat:1 }}</span>
+                    <span class="score-badge">Equality: {{ university.equality_score|floatformat:1 }}</span>
+                </div>
+            </div>
+            <div class="ranking-details">
+                <h4>Rank: {{ forloop.counter }}</h4>
+                <p>Score: {{ university.ranking_score|floatformat:1 }}</p>
+                {% if user.is_authenticated and user.profile.gender == 'female' %}
+                    <a href="{% url 'universities:rate' university.slug %}" class="cta-button">Rank this University</a>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p>No universities found matching your criteria. Try adding one in the admin panel!</p>
+    {% endfor %}
+
+{% endblock %}

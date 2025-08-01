@@ -1,0 +1,20 @@
+# C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\forms.py
+from django import forms
+from .models import Rating, Post
+
+class RatingForm(forms.ModelForm):
+    class Meta:
+        model = Rating
+        fields = ['safety', 'inclusivity', 'support', 'living', 'equality']
+        widgets = {
+            'safety': forms.RadioSelect(choices=[(i, str(i)) for i in range(1, 6)]),
+            'inclusivity': forms.RadioSelect(choices=[(i, str(i)) for i in range(1, 6)]),
+            'support': forms.RadioSelect(choices=[(i, str(i)) for i in range(1, 6)]),
+            'living': forms.RadioSelect(choices=[(i, str(i)) for i in range(1, 6)]),
+            'equality': forms.RadioSelect(choices=[(i, str(i)) for i in range(1, 6)]),
+        }
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'image']

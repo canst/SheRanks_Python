@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ranking Methodology{% endblock %}
+
+{% block content %}
+    <style>
+        .methodology-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .methodology-container h1, h2 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .methodology-card {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .methodology-card .icon {
+            font-size: 2em;
+            color: #007bff;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stats-grid .card {
+            text-align: center;
+        }
+        .stats-grid canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+
+    <div class="methodology-container">
+        <h1>Our Ranking Methodology</h1>
+        <p style="text-align: center;">Our platform provides a transparent and data-driven ranking of universities based on the experiences of female students worldwide. The ranking is a composite score derived from several key parameters, ensuring a holistic and fair evaluation.</p>
+
+        <h2>Ranking Parameters</h2>
+        <div class="methodology-card">
+            <i class="fas fa-shield-alt icon"></i>
+            <div>
+                <h3>Safety Score</h3>
+                <p>Measures the perceived security and safety on and around campus, based on user reports of harassment, assault, and other incidents.</p>
+            </div>
+        </div>
+        <div class="methodology-card">
+            <i class="fas fa-users-cog icon"></i>
+            <div>
+                <h3>Inclusivity Score</h3>
+                <p>Assesses the sense of belonging and diversity within the university community, reflecting how well all students feel welcomed and respected.</p>
+            </div>
+        </div>
+        <div class="methodology-card">
+            <i class="fas fa-hand-holding-heart icon"></i>
+            <div>
+                <h3>Student Support Score</h3>
+                <p>Evaluates the quality and accessibility of support services, including mental health, academic advising, and resources for victims of violence.</p>
+            </div>
+        </div>
+        <div class="methodology-card">
+            <i class="fas fa-home icon"></i>
+            <div>
+                <h3>Living Environment Score</h3>
+                <p>Rates the quality of campus housing, amenities, and the overall social and living atmosphere of the university and its surrounding area.</p>
+            </div>
+        </div>
+        <div class="methodology-card">
+            <i class="fas fa-balance-scale icon"></i>
+            <div>
+                <h3>Gender Equality Score</h3>
+                <p>Reflects the university's commitment to gender equality, including policies, representation of female faculty and leadership, and gender-focused programs.</p>
+            </div>
+        </div>
+
+        <h2>Our Impact and Outcomes</h2>
+        <p style="text-align: center;">Our data helps drive positive change. The following visualizations show the impact of our community's contributions.</p>
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Average Score Distribution</h3>
+                <canvas id="averageScoresChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Community Impact</h3>
+                <canvas id="outcomesChart"></canvas>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 40px;">Your Contribution Matters</h2>
+        <p style="text-align: center;">The rankings are constantly evolving based on user-submitted ratings and posts. By sharing your experience, you help inform other students and encourage institutions to improve.</p>
+        <div style="text-align: center;">
+            <a href="{% url 'accounts:register' %}" class="cta-button">Join Our Community Today</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bar Chart for Average Scores
+            const avgScoresCtx = document.getElementById('averageScoresChart');
+            const avgScoresData = {
+                labels: {{ data.labels|safe }},
+                datasets: [{
+                    label: 'Average Score',
+                    data: {{ data.values|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            new Chart(avgScoresCtx, {
+                type: 'bar',
+                data: avgScoresData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Doughnut Chart for Community Impact
+            const outcomesCtx = document.getElementById('outcomesChart');
+            const outcomesData = {
+                labels: {{ data.outcomes.categories|safe }},
+                datasets: [{
+                    label: 'Community Impact',
+                    data: {{ data.outcomes.values|safe }},
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)'
+                    ],
+                    hoverOffset: 4
+                }]
+            };
+            new Chart(outcomesCtx, {
+                type: 'doughnut',
+                data: outcomesData,
+                options: {
+                    responsive: true
+                }
+            });
+        });
+    </script>
+{% endblock %}

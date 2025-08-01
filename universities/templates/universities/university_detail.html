@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ university.name }}{% endblock %}
+
+{% block content %}
+    <style>
+        .university-header {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .university-header h1 {
+            color: #007bff;
+            margin-top: 0;
+            display: inline-block;
+        }
+        .university-header .verified-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .ranking-summary {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .ranking-summary .score-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        .ranking-summary .rank-display {
+            font-size: 1.5em;
+            color: #555;
+        }
+        .trophy-icon {
+            font-size: 1.5em;
+            margin-left: 10px;
+        }
+        .trophy-gold { color: gold; }
+        .trophy-silver { color: silver; }
+        .trophy-bronze { color: #cd7f32; }
+        .main-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .posts-section .post-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .posts-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+    </style>
+
+    <div class="university-header">
+        <h1>{{ university.name }}</h1>
+        {% if university.is_verified %}
+            <span class="verified-badge">Verified <i class="fas fa-check-circle"></i></span>
+        {% endif %}
+        <div class="ranking-summary">
+            <div class="score-display">
+                Score: {{ university.ranking_score|floatformat:1 }}
+            </div>
+            <div class="rank-display">
+                Rank: {{ rank }}
+                {% if rank == 1 %}<i class="fas fa-trophy trophy-icon trophy-gold"></i>
+                {% elif rank == 2 %}<i class="fas fa-trophy trophy-icon trophy-silver"></i>
+                {% elif rank == 3 %}<i class="fas fa-trophy trophy-icon trophy-bronze"></i>
+                {% endif %}
+            </div>
+            {% if user.is_authenticated and user.profile.gender == 'female' %}
+                <a href="{% url 'universities:rate' university.slug %}" class="cta-button" style="margin-left: auto;">Rank this University</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="main-info-grid">
+        <div class="card">
+            <h2>Ranking Breakdown</h2>
+            <canvas id="universityRadarChart"></canvas>
+        </div>
+        <div class="card">
+            <h2>About</h2>
+            <p><strong>Location:</strong> {{ university.location }}</p>
+            <p><strong>Website:</strong> <a href="{{ university.website }}" target="_blank">{{ university.website }}</a></p>
+            <p><strong>Description:</strong> {{ university.description }}</p>
+        </div>
+    </div>
+
+    
+    <div class="card posts-section">
+        <h2>Posts</h2>
+        {% for post in posts %}
+            <div class="post-card">
+                <h3>{{ post.title }}</h3>
+                <p>by {{ post.author.username }} on {{ post.created_at|date:"F d, Y" }}</p>
+                <p>{{ post.content }}</p>
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}" style="max-width:100%; height:auto;">
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No posts yet. Be the first to add one!</p>
+        {% endfor %}
+        <div style="text-align: center; margin-top: 20px;">
+            {% if user.is_authenticated and user.profile.gender == 'female' %}
+                <a href="{% url 'universities:create_post' university.slug %}" class="cta-button">Add a Post</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('universityRadarChart');
+            const data = {
+                labels: ['Safety', 'Inclusivity', 'Support', 'Living', 'Equality'],
+                datasets: [{
+                    label: 'University Scores',
+                    data: [
+                        {{ university.safety_score }},
+                        {{ university.inclusivity_score }},
+                        {{ university.support_score }},
+                        {{ university.living_score }},
+                        {{ university.equality_score }}
+                    ],
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    pointBackgroundColor: 'rgba(0, 123, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(0, 123, 255, 1)'
+                }]
+            };
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: false
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            pointLabels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            };
+            new Chart(ctx, config);
+        });
+    </script>
+{% endblock %}

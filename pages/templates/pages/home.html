@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
+    <section class="hero-section">
+        <div class="slide active" style="background-image: url('{% static "empowerher.png" %}');">
+            <div class="slide-text">
+                <h2>Promote Campus Safety</h2>
+                <p>Share your experiences and help us rank universities based on safety for female students.</p>
+                <a href="{% url 'accounts:register' %}" class="cta-button">Join Our Community</a>
+            </div>
+        </div>
+        <div class="slide" style="background-image: url('{% static "sheranksmission.png" %}');">
+            <div class="slide-text">
+                <h2>Empower Every Voice</h2>
+                <p>Your reviews contribute to a more transparent and accountable higher education system.</p>
+                <a href="{% url 'universities:list' %}" class="cta-button">Explore Universities</a>
+            </div>
+        </div>
+        <div class="slide" style="background-image: url('{% static "sheranksabout.png" %}');">
+            <div class="slide-text">
+                <h2>Support a Safer Future</h2>
+                <p>Help us support students affected by harassment and violence on campus.</p>
+                <a href="{{ donation_link }}" class="cta-button support-button">Donate Now</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <section id="top-ranked" class="section">
+            <h2>Top Ranked Safe Universities</h2>
+            <p style="text-align: center;">Explore the top 20 universities based on our data-driven safety and inclusivity scores.</p>
+            <div class="university-grid">
+                {% for university in top_ranked_universities %}
+                    <div class="university-card">
+                        <div class="ranking-info">
+                            <div>
+                                <h3><a href="{% url 'universities:detail' university.slug %}">{{ university.name }}</a></h3>
+                                <p>{{ university.location }}</p>
+                            </div>
+                            <div class="ranking-score">
+                                {% if forloop.counter == 1 %}
+                                    <i class="fas fa-trophy trophy-icon trophy-gold"></i>
+                                {% elif forloop.counter == 2 %}
+                                    <i class="fas fa-trophy trophy-icon trophy-silver"></i>
+                                {% elif forloop.counter == 3 %}
+                                    <i class="fas fa-trophy trophy-icon trophy-bronze"></i>
+                                {% endif %}
+                                {{ university.ranking_score|floatformat:1 }}
+                            </div>
+                        </div>
+                        <div class="score-breakdown">
+                            <canvas id="universityChart-{{ university.id }}" width="200" height="200"></canvas>
+                        </div>
+                        <div class="read-more-link">
+                            <a href="{% url 'universities:detail' university.slug %}" class="cta-button">View Details</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No universities found yet. Be the first to register one!</p>
+                {% endfor %}
+            </div>
+            <div class="read-more-link">
+                <a href="{% url 'universities:list' %}" class="cta-button">View All Rankings</a>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <h2>Our Mission</h2>
+            <div class="image-banner" style="background-image: url('{% static "sheranksmission.png" %}');"></div>
+            <p>{{ mission_statement }}</p>
+            <p><strong>Objectives:</strong></p>
+            <ul>
+                <li>Empower female students to voice their concerns.</li>
+                <li>Drive positive change in educational institutions.</li>
+                <li>Provide a transparent ranking system based on real data.</li>
+            </ul>
+        </section>
+
+        <section id="team" class="section">
+            <h2>Meet the Team</h2>
+            <div class="team-container">
+                {% for member in team_members %}
+                    <div class="team-member-card">
+                        <img src="{% static member.avatar %}" alt="{{ member.name }}'s Avatar" class="avatar">
+                        <h3>{{ member.name }}</h3>
+                        <p>{{ member.role }}</p>
+                        <div class="social-links">
+                            <a href="{{ member.linkedin }}" target="_blank">
+                                <i class="fa-brands fa-linkedin"></i>
+                            </a>
+                            <a href="{{ member.x_url }}" target="_blank">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Hero Section Slideshow
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[(n % slides.length + slides.length) % slides.length].classList.add('active');
+        }
+        function nextSlide() {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+        setInterval(nextSlide, 5000);
+        showSlide(currentSlide);
+
+        // Chart.js Pie Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for university in top_ranked_universities %}
+                const ctx{{ university.id }} = document.getElementById('universityChart-{{ university.id }}');
+                const data{{ university.id }} = {
+                    labels: ['Safety', 'Inclusivity', 'Support', 'Living', 'Equality'],
+                    datasets: [{
+                        data: [
+                            {{ university.safety_score }},
+                            {{ university.inclusivity_score }},
+                            {{ university.support_score }},
+                            {{ university.living_score }},
+                            {{ university.equality_score }}
+                        ],
+                        backgroundColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 205, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                };
+                new Chart(ctx{{ university.id }}, {
+                    type: 'pie',
+                    data: data{{ university.id }},
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true
+                            }
+                        }
+                    }
+                });
+            {% endfor %}
+        });
+    </script>
+{% endblock %}
