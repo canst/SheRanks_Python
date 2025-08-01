@@ -3,12 +3,13 @@ Django settings for sheranks_project project.
 """
 from pathlib import Path
 import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-_np9)3yxgd(_3+n1%k!y!tc)w5y^dsp=%4&)&1yxw#)&y2re+k'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-django-key-for-development')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = [os.environ.get('VERCEL_URL', '127.0.0.1')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,11 +53,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sheranks_project.wsgi.application'
 
+# Database
+# Vercel requires a production database. Use a service like Neon, Railway, or Vercel Postgres.
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default='sqlite:///db.sqlite3', conn_max_age=600)
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -73,6 +74,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'images']
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Vercel collects static files here
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 

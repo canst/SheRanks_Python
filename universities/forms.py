@@ -1,6 +1,7 @@
 # C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\forms.py
 from django import forms
 from .models import Rating, Post
+from django.core.exceptions import ValidationError
 
 class RatingForm(forms.ModelForm):
     class Meta:
@@ -18,3 +19,13 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'content', 'image']
+        
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if not image:
+            return image
+
+        if not image.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            raise ValidationError("Only image files (png, jpg, jpeg, gif) are allowed.")
+
+        return image

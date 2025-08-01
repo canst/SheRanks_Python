@@ -16,6 +16,9 @@ class University(models.Model):
     support_score = models.FloatField(default=0.0)
     living_score = models.FloatField(default=0.0)
     equality_score = models.FloatField(default=0.0)
+    
+    # New field to store average post sentiment score
+    post_sentiment_score = models.FloatField(default=0.0) 
 
     def __str__(self):
         return self.name

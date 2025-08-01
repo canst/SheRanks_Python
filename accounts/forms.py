@@ -26,9 +26,7 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['bio', 'location', 'gender'] # 'gender' field is now included
+        fields = ['bio', 'location', 'gender']
         widgets = {
             'gender': forms.RadioSelect(choices=Profile.GENDER_CHOICES)
         }
-        
-# FORCED RELOAD. Save the file.
