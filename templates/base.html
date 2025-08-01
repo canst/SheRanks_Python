@@ -54,6 +54,46 @@
             top: 20px;
             right: 20px;
         }
+        /* Shared Styles for a clean UI */
+        .auth-card {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .auth-card h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input[type="radio"] {
+            width: auto;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .form-error {
+            color: #dc3545;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
         .hero-section {
             position: relative;
             height: 400px;
@@ -103,7 +143,6 @@
             margin: 15px 0;
             border-radius: 8px;
         }
-        /* New Team Section Styles */
         .team-container {
             display: flex;
             justify-content: center;
@@ -146,7 +185,6 @@
             margin: 0 5px;
             color: #555;
         }
-        /* New University Grid Styles */
         .university-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -211,13 +249,13 @@
         <div class="nav-auth">
             {% if user.is_authenticated %}
                 <span>Hello, {{ user.username }}!</span> |
-                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" style="background:none; border:none; color: #555; cursor:pointer;">Logout</button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}">Login</a> |
-                <a href="{% url 'register' %}">Register</a>
+                <a href="{% url 'accounts:login' %}">Login</a> |
+                <a href="{% url 'accounts:register' %}">Register</a>
             {% endif %}
         </div>
     </header>
