@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Profile
 from universities.models import University
-from django.core.exceptions import ValidationError
 
 class UserRegistrationForm(forms.ModelForm):
     # User Model Fields
@@ -46,17 +45,16 @@ class UserRegistrationForm(forms.ModelForm):
             password=self.cleaned_data['password']
         )
         
-        profile = Profile.objects.create(
-            user=user,
-            first_name=self.cleaned_data.get('first_name'),
-            last_name=self.cleaned_data.get('last_name'),
-            gender=self.cleaned_data.get('gender'),
-            birth_date=self.cleaned_data.get('birth_date'),
-            avatar=self.cleaned_data.get('avatar'),
-            bio=self.cleaned_data.get('bio', ''),
-            location=self.cleaned_data.get('location', '')
-        )
-
+        # Get the profile that was automatically created by the signal and update it
+        profile = user.profile
+        profile.first_name = self.cleaned_data.get('first_name')
+        profile.last_name = self.cleaned_data.get('last_name')
+        profile.gender = self.cleaned_data.get('gender')
+        profile.birth_date = self.cleaned_data.get('birth_date')
+        profile.avatar = self.cleaned_data.get('avatar')
+        profile.bio = self.cleaned_data.get('bio', '')
+        profile.location = self.cleaned_data.get('location', '')
+        
         university_name = self.cleaned_data.get('university_name')
         if university_name:
             university, created = University.objects.get_or_create(
@@ -64,9 +62,11 @@ class UserRegistrationForm(forms.ModelForm):
                 defaults={'slug': university_name.lower().replace(' ', '-')}
             )
             profile.university = university
-            profile.save()
+        
+        profile.save()
 
         return user
+
 
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
