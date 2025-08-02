@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Step 2{% endblock %}
+{% block content %}
+    <style>
+        .auth-card {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .auth-card h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input[type="radio"] {
+            width: auto;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .form-error {
+            color: #dc3545;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        .cta-button {
+            width: 100%;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+
+    <div class="auth-card">
+        <h2>Your Profile (Step 2/2)</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ profile_form.first_name.id_for_label }}">First Name</label>
+                {{ profile_form.first_name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.last_name.id_for_label }}">Last Name</label>
+                {{ profile_form.last_name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.birth_date.id_for_label }}">Birth Date</label>
+                {{ profile_form.birth_date }}
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                {{ profile_form.gender }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.avatar.id_for_label }}">Avatar</label>
+                {{ profile_form.avatar }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.university_name.id_for_label }}">University Name</label>
+                <input list="university-list" name="{{ profile_form.university_name.name }}" id="{{ profile_form.university_name.id_for_label }}" placeholder="Type to search...">
+                <datalist id="university-list">
+                    {% for university in universities %}
+                        <option value="{{ university.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.bio.id_for_label }}">Bio</label>
+                {{ profile_form.bio }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.location.id_for_label }}">Location</label>
+                {{ profile_form.location }}
+            </div>
+            <button type="submit" name="step_2" class="cta-button">Register</button>
+        </form>
+    </div>
+{% endblock %}

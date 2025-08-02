@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Register - Step 1{% endblock %}
+{% block content %}
+    <div class="auth-card">
+        <h2>Create an Account (Step 1/2)</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in user_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="form-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" name="step_1" class="cta-button">Next</button>
+        </form>
+    </div>
+{% endblock %}
