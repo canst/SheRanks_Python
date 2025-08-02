@@ -80,6 +80,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 
-# These lines are now uncommented for local development
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
