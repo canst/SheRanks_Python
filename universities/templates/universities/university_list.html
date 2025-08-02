@@ -159,7 +159,8 @@
                 alert('Please select at least two universities to compare.');
                 return;
             }
-            window.location.href = `{% url 'universities:compare' slugs=slugs.join('/') %}`;
+            // Corrected line: We build the URL with JavaScript
+            window.location.href = `{% url 'universities:compare' slugs='PLACEHOLDER' %}`.replace('PLACEHOLDER', slugs.join('/'));
         }
     </script>
 {% endblock %}
