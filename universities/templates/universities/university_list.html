@@ -159,7 +159,8 @@
                 alert('Please select at least two universities to compare.');
                 return;
             }
-            window.location.href = `{% url 'universities:compare' slugs=slugs.join('/') %}`;
+            window.location.href = `/universities/compare/${slugs.join('/')}/`;
+
         }
     </script>
 {% endblock %}
