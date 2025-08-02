@@ -9,7 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default-django-key-for-development')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'she-ranks-python.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'she-ranks-python.herokuapp.com', '.herokuapp.com']
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
