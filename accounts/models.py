@@ -20,6 +20,7 @@ class Profile(models.Model):
     university = models.ForeignKey(University, on_delete=models.SET_NULL, null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
+    is_university_rep = models.BooleanField(default=False)
     
     def __str__(self):
         return f'{self.user.username} Profile'

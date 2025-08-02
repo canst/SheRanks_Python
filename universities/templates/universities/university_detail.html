@@ -70,6 +70,18 @@
             margin-top: 0;
             color: #007bff;
         }
+        .comments-section {
+            margin-top: 20px;
+        }
+        .comment-card {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .comment-card .comment-author {
+            font-weight: bold;
+        }
     </style>
 
     <div class="university-header">
@@ -107,7 +119,6 @@
         </div>
     </div>
 
-    
     <div class="card posts-section">
         <h2>Posts</h2>
         {% for post in posts %}
@@ -118,6 +129,25 @@
                 {% if post.image %}
                     <img src="{{ post.image.url }}" alt="{{ post.title }}" style="max-width:100%; height:auto;">
                 {% endif %}
+                <div class="comments-section">
+                    <h4>Comments ({{ post.comments.count }})</h4>
+                    {% for comment in post.comments.all %}
+                        <div class="comment-card">
+                            <p><strong class="comment-author">{{ comment.author.username }}</strong> commented on {{ comment.created_at|date:"F d, Y" }}</p>
+                            <p>{{ comment.content }}</p>
+                        </div>
+                    {% empty %}
+                        <p>No comments yet.</p>
+                    {% endfor %}
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'universities:detail' university_slug=university.slug %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="post_id" value="{{ post.id }}">
+                            {{ comment_form.as_p }}
+                            <button type="submit" class="cta-button">Add Comment</button>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
         {% empty %}
             <p>No posts yet. Be the first to add one!</p>

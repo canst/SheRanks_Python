@@ -1,8 +1,3 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}University Rankings{% endblock %}
-
 {% block content %}
     <style>
         .ranking-explanation {
@@ -24,6 +19,17 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             width: 50%;
+        }
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-container select, .filter-container input {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
         .university-card {
             background-color: #fff;
@@ -63,6 +69,12 @@
             font-size: 1.5em;
             color: #007bff;
         }
+        .comparison-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
     </style>
 
     <div class="ranking-explanation">
@@ -79,34 +91,62 @@
 
     <div class="search-container">
         <form method="GET" action="{% url 'universities:list' %}">
-            <input type="text" name="q" placeholder="Search for a university..." value="{{ search_query }}">
+            <input type="text" name="q" placeholder="Search by name..." value="{{ search_query }}">
             <button type="submit" class="cta-button">Search</button>
         </form>
     </div>
 
-    {% for university in universities %}
-        <div class="university-card">
-            <div class="university-info">
-                <h3><a href="{% url 'universities:detail' university.slug %}">{{ university.name }}</a></h3>
-                <p>{{ university.location }}</p>
-                <div class="scores-container">
-                    <span class="score-badge">Safety: {{ university.safety_score|floatformat:1 }}</span>
-                    <span class="score-badge">Inclusivity: {{ university.inclusivity_score|floatformat:1 }}</span>
-                    <span class="score-badge">Support: {{ university.support_score|floatformat:1 }}</span>
-                    <span class="score-badge">Living: {{ university.living_score|floatformat:1 }}</span>
-                    <span class="score-badge">Equality: {{ university.equality_score|floatformat:1 }}</span>
+    <div class="filter-container">
+        <form method="GET" action="{% url 'universities:list' %}">
+            <select name="country">
+                <option value="">Filter by Country</option>
+                {% for country in countries %}
+                    <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="min_score" placeholder="Min Score" min="0" max="5" step="0.1" value="{{ min_score }}">
+            <input type="number" name="max_score" placeholder="Max Score" min="0" max="5" step="0.1" value="{{ max_score }}">
+            <button type="submit" class="cta-button">Apply Filters</button>
+        </form>
+    </div>
+
+    <form id="compare-form">
+        {% for university in universities %}
+            <div class="university-card">
+                <div class="university-info">
+                    <h3><a href="{% url 'universities:detail' university.slug %}">{{ university.name }}</a></h3>
+                    <p>{{ university.location }}</p>
+                    <div class="scores-container">
+                        <span class="score-badge">Safety: {{ university.safety_score|floatformat:1 }}</span>
+                        <span class="score-badge">Inclusivity: {{ university.inclusivity_score|floatformat:1 }}</span>
+                        <span class="score-badge">Support: {{ university.support_score|floatformat:1 }}</span>
+                        <span class="score-badge">Living: {{ university.living_score|floatformat:1 }}</span>
+                        <span class="score-badge">Equality: {{ university.equality_score|floatformat:1 }}</span>
+                    </div>
+                </div>
+                <div class="ranking-details">
+                    <h4>Rank: {{ forloop.counter }}</h4>
+                    <p>Score: {{ university.ranking_score|floatformat:1 }}</p>
+                    <input type="checkbox" name="compare_slugs" value="{{ university.slug }}"> Compare
                 </div>
             </div>
-            <div class="ranking-details">
-                <h4>Rank: {{ forloop.counter }}</h4>
-                <p>Score: {{ university.ranking_score|floatformat:1 }}</p>
-                {% if user.is_authenticated and user.profile.gender == 'female' %}
-                    <a href="{% url 'universities:rate' university.slug %}" class="cta-button">Rank this University</a>
-                {% endif %}
-            </div>
+        {% empty %}
+            <p style="text-align: center;">No universities found matching your criteria. Try adding one in the admin panel!</p>
+        {% endfor %}
+        <div class="comparison-buttons">
+            <button type="button" class="cta-button" onclick="compareSelected()">Compare Selected</button>
         </div>
-    {% empty %}
-        <p>No universities found matching your criteria. Try adding one in the admin panel!</p>
-    {% endfor %}
-
+    </form>
+    
+    <script>
+        function compareSelected() {
+            const checkboxes = document.querySelectorAll('input[name="compare_slugs"]:checked');
+            const slugs = Array.from(checkboxes).map(cb => cb.value);
+            if (slugs.length < 2) {
+                alert('Please select at least two universities to compare.');
+                return;
+            }
+            window.location.href = `{% url 'universities:list' %}compare/${slugs.join('/')}/`;
+        }
+    </script>
 {% endblock %}

@@ -29,3 +29,11 @@ class PostForm(forms.ModelForm):
             raise ValidationError("Only image files (png, jpg, jpeg, gif) are allowed.")
 
         return image
+    
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Write a comment...'}),
+        }    

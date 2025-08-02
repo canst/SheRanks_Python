@@ -53,12 +53,34 @@ def recalculate_university_ranking(university):
 
 def university_list(request):
     universities = University.objects.all().order_by('-ranking_score')
+
+    # Handle search queries
     query = request.GET.get('q')
     if query:
         universities = universities.filter(name__icontains=query)
+        
+    # Handle advanced filters
+    country = request.GET.get('country')
+    min_score = request.GET.get('min_score')
+    max_score = request.GET.get('max_score')
+
+    if country:
+        universities = universities.filter(location__icontains=country)
+    if min_score:
+        universities = universities.filter(ranking_score__gte=min_score)
+    if max_score:
+        universities = universities.filter(ranking_score__lte=max_score)
+
+    # Get a unique list of countries for the filter dropdown
+    countries = sorted(list(University.objects.values_list('location', flat=True).distinct()))
+
     context = {
         'universities': universities,
         'search_query': query,
+        'countries': countries,
+        'selected_country': country,
+        'min_score': min_score,
+        'max_score': max_score,
     }
     return render(request, 'universities/university_list.html', context)
 
@@ -69,11 +91,26 @@ def university_detail(request, university_slug):
         rank = all_universities.index(university) + 1
     except ValueError:
         rank = "N/A"
+
+    # Handle comment submission
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.post = get_object_or_404(Post, id=request.POST.get('post_id'))
+                comment.author = request.user
+                comment.save()
+                return redirect('universities:detail', university_slug=university.slug)
+    else:
+        comment_form = CommentForm()
+
     posts = Post.objects.filter(university=university).order_by('-created_at')
     context = {
         'university': university,
         'posts': posts,
         'rank': rank,
+        'comment_form': comment_form,
     }
     return render(request, 'universities/university_detail.html', context)
 
@@ -117,3 +154,12 @@ def rate_university(request, university_slug):
         form = RatingForm()
     
     return render(request, 'universities/rate_university.html', {'form': form, 'university': university})
+
+def compare_universities(request, slugs):
+    slug_list = slugs.split('/')
+    universities = University.objects.filter(slug__in=slug_list)
+    
+    context = {
+        'universities': universities
+    }
+    return render(request, 'universities/compare_universities.html', context)

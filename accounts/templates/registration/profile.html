@@ -1,19 +1,26 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}User Profile{% endblock %}
 {% block content %}
     <style>
         .auth-card {
-            max-width: 400px;
+            max-width: 600px;
             margin: 50px auto;
             padding: 30px;
             border-radius: 8px;
             background-color: #fff;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
         .auth-card h2 {
             text-align: center;
             color: #007bff;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -46,11 +53,34 @@
             margin-top: 10px;
             text-align: center;
         }
+        .verified-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 20px;
+        }
     </style>
 
     <div class="auth-card">
-        <h2>Your Profile</h2>
-        <form method="post">
+        <h2>
+            Your Profile
+            {% if request.user.profile.is_university_rep %}
+                <span class="verified-badge">Verified <i class="fas fa-check-circle"></i></span>
+            {% endif %}
+        </h2>
+        {% if request.user.profile.avatar %}
+            <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}'s avatar" class="avatar">
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% for field in user_form %}
                 <div class="form-group">
@@ -59,12 +89,37 @@
                 </div>
             {% endfor %}
             <div class="form-group">
-                <label for="{{ profile_form.bio.id_for_label }}">Bio</label>
-                {{ profile_form.bio }}
+                <label for="{{ profile_form.first_name.id_for_label }}">First Name</label>
+                {{ profile_form.first_name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.last_name.id_for_label }}">Last Name</label>
+                {{ profile_form.last_name }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.birth_date.id_for_label }}">Birth Date</label>
+                {{ profile_form.birth_date }}
             </div>
             <div class="form-group">
                 <label>Gender</label>
                 {{ profile_form.gender }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.avatar.id_for_label }}">Avatar</label>
+                {{ profile_form.avatar }}
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.university_name.id_for_label }}">University Name</label>
+                <input list="university-list" name="{{ profile_form.university_name.name }}" id="{{ profile_form.university_name.id_for_label }}" value="{{ profile_form.university_name.initial }}">
+                <datalist id="university-list">
+                    {% for university in universities %}
+                        <option value="{{ university.name }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="{{ profile_form.bio.id_for_label }}">Bio</label>
+                {{ profile_form.bio }}
             </div>
             <div class="form-group">
                 <label for="{{ profile_form.location.id_for_label }}">Location</label>
