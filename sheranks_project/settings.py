@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'import_export',
-    'universities', 
+    'universities.apps.UniversitiesConfig', 
     'pages',
     'accounts',
 ]
