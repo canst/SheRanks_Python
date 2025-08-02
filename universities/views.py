@@ -11,7 +11,12 @@ def calculate_post_sentiment(text):
     return vs['compound']
 
 def recalculate_university_ranking(university):
+    # 1. Get average scores from female ratings
     female_ratings = Rating.objects.filter(university=university, user__profile__gender='female')
+
+    # Count the number of female ratings
+    num_ratings = female_ratings.count()
+    university.num_ratings = num_ratings
 
     if female_ratings.exists():
         avg_scores = female_ratings.aggregate(
@@ -33,6 +38,7 @@ def recalculate_university_ranking(university):
         university.living_score = 0.0
         university.equality_score = 0.0
 
+    # 2. Get average sentiment from all posts (AI analysis)
     all_posts = Post.objects.filter(university=university)
     if all_posts.exists():
         avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score']
@@ -40,16 +46,22 @@ def recalculate_university_ranking(university):
     else:
         university.post_sentiment_score = 0.0
 
-    university.ranking_score = (
-        (university.safety_score * 0.3) +
-        (university.inclusivity_score * 0.2) +
-        (university.support_score * 0.2) +
-        (university.living_score * 0.15) +
-        (university.equality_score * 0.15) +
-        (university.post_sentiment_score * 0.5)
+    # 3. Calculate the final ranking score (composite of ratings and post sentiment)
+    # The ranking score is now influenced by the number of ratings
+    rating_weight = min(university.num_ratings / 10.0, 1.0) # More ratings gives more confidence, up to 10 ratings
+    
+    score_from_ratings = (
+        university.safety_score * 0.3 +
+        university.inclusivity_score * 0.2 +
+        university.support_score * 0.2 +
+        university.living_score * 0.15 +
+        university.equality_score * 0.15
     )
     
+    university.ranking_score = (score_from_ratings * rating_weight) + (university.post_sentiment_score * 0.5)
+
     university.save()
+
 
 def university_list(request):
     universities = University.objects.all().order_by('-ranking_score')

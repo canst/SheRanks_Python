@@ -9,7 +9,7 @@ class University(models.Model):
     description = models.TextField(blank=True, null=True)
     slug = models.SlugField(max_length=200, unique=True, help_text="A URL-friendly version of the university name.")
     is_verified = models.BooleanField(default=False, help_text="Has this university been officially verified?")
-
+    num_ratings = models.IntegerField(default=0)
     ranking_score = models.FloatField(default=0.0)
     safety_score = models.FloatField(default=0.0)
     inclusivity_score = models.FloatField(default=0.0)
