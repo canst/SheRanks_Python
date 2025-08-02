@@ -156,8 +156,10 @@
         {% empty %}
             <p>No posts yet. Be the first to add one!</p>
         {% endfor %}
-        <div class="return-to-home-link">
-            <a href="{% url 'pages:home' %}" class="cta-button">Return to Homepage</a>
+        <div style="text-align: center; margin-top: 20px;">
+            {% if user.is_authenticated and user.profile.gender == 'female' %}
+                <a href="{% url 'universities:create_post' university.slug %}" class="cta-button">Add a Post about your experience or impression</a>
+            {% endif %}
         </div>
     </div>
 
