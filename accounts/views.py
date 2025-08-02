@@ -3,11 +3,14 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileUpdateForm
 from universities.models import University
 
+from .models import Profile  
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            # Create profile if it doesn't exist to avoid duplicates
+            Profile.objects.get_or_create(user=user)
             return redirect('accounts:login')
     else:
         form = UserRegistrationForm()
