@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default-django-key-for-development')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = [os.environ.get('.vercel.app', '127.0.0.1', 'localhost'), 'she-ranks-python.vercel.app']
+ALLOWED_HOSTS = [os.environ.get('VERCEL_URL', '127.0.0.1'), 'she-ranks-python.vercel.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
