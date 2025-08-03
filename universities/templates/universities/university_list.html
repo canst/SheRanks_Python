@@ -188,14 +188,15 @@
     </div>
 
     <script>
-        function compareSelected() {
-            const checkboxes = document.querySelectorAll('input[name="compare_slugs"]:checked');
-            const slugs = Array.from(checkboxes).map(cb => cb.value);
-            if (slugs.length < 2) {
-                alert('Please select at least two universities to compare.');
-                return;
-            }
-            window.location.href = `{% url 'universities:compare' slugs=slugs.join('/') %}`;
+    function compareSelected() {
+        const checkboxes = document.querySelectorAll('input[name="compare_slugs"]:checked');
+        const slugs = Array.from(checkboxes).map(cb => cb.value);
+        if (slugs.length < 2) {
+            alert('Please select at least two universities to compare.');
+            return;
         }
-    </script>
+        window.location.href = `/universities/compare/${slugs.join('/')}/`;
+    }
+</script>
+
 {% endblock %}
