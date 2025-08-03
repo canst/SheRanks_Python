@@ -60,7 +60,6 @@ def recalculate_university_ranking(university):
         university.equality_score * 0.15
     )
     
-    # Adjust weights so they sum to 1 (example: posts weighted 20%, ratings 80%)
     university.ranking_score = (score_from_ratings * rating_weight * 0.8) + (university.post_sentiment_score * 0.2)
     
     university.save()
@@ -71,6 +70,7 @@ def recalculate_university_ranking(university):
         if uni.rank != index:
             uni.rank = index
             uni.save(update_fields=['rank'])
+
 
 
 def university_list(request):
