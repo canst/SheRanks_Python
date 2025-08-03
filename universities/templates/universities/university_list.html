@@ -1,25 +1,10 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}University Rankings{% endblock %}
+
 {% block content %}
     <style>
-        .disclaimer-section {
-            background-color: #ffeeba;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .disclaimer-section p {
-            margin: 0;
-        }
-        .add-university-cta {
-            background-color: #d1ecf1;
-            border: 1px solid #bee5eb;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
         .ranking-explanation {
             background-color: #e9ecef;
             padding: 20px;
@@ -98,18 +83,6 @@
         .return-to-home-link {
             text-align: center;
             margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .search-container input {
-                width: 80%;
-            }
-            .university-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .ranking-details {
-                text-align: left;
-            }
         }
     </style>
 
