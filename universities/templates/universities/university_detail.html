@@ -104,8 +104,15 @@
                 {% elif rank == 3 %}<i class="fas fa-trophy trophy-icon trophy-bronze"></i>
                 {% endif %}
             </div>
+
             {% if user.is_authenticated and user.profile.gender == 'female' %}
-                <a href="{% url 'universities:rate' university.slug %}" class="cta-button" style="margin-left: auto;">Rank this University</a>
+                {% if not has_rated %}
+                    <a href="{% url 'universities:rate' university.slug %}" class="cta-button" style="margin-left: auto;">Rank this University</a>
+                {% else %}
+                    <span style="margin-left: auto; font-weight: bold; color: #28a745;">
+                        ✅ You have already ranked this university.
+                    </span>
+                {% endif %}
             {% endif %}
         </div>
     </div>

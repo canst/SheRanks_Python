@@ -100,6 +100,7 @@ def university_list(request):
     }
     return render(request, 'universities/university_list.html', context)
 
+
 def university_detail(request, university_slug):
     university = get_object_or_404(University, slug=university_slug)
     all_universities = list(University.objects.all().order_by('-ranking_score'))
@@ -107,8 +108,14 @@ def university_detail(request, university_slug):
         rank = all_universities.index(university) + 1
     except ValueError:
         rank = "N/A"
+
     posts = Post.objects.filter(university=university).order_by('-created_at')
-    
+
+    #Check if the user has already rated this university
+    has_rated = False
+    if request.user.is_authenticated:
+        has_rated = Rating.objects.filter(user=request.user, university=university).exists()
+
     if request.method == 'POST':
         if request.user.is_authenticated:
             comment_form = CommentForm(request.POST)
@@ -126,6 +133,7 @@ def university_detail(request, university_slug):
         'posts': posts,
         'rank': rank,
         'comment_form': comment_form,
+        'has_rated': has_rated,  #Pass to template
     }
     return render(request, 'universities/university_detail.html', context)
 
@@ -197,6 +205,7 @@ def compare_universities(request, slugs):
     return render(request, 'universities/compare_universities.html', context)
 
 from django.shortcuts import render
+
 
 def compare_view(request, slugs):
     slug_list = slugs.split(',')
