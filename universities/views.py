@@ -1,6 +1,7 @@
 # C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Avg, F,Count
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from .models import University, Post, Rating
@@ -128,6 +129,7 @@ def university_detail(request, university_slug):
     }
     return render(request, 'universities/university_detail.html', context)
 
+
 @login_required
 def create_post(request, university_slug):
     university = get_object_or_404(University, slug=university_slug)
@@ -149,25 +151,41 @@ def create_post(request, university_slug):
     
     return render(request, 'universities/create_post.html', {'form': form, 'university': university})
 
-@login_required
-def rate_university(request, university_slug):
-    university = get_object_or_404(University, slug=university_slug)
-    
-    if request.method == 'POST':
-        form = RatingForm(request.POST)
-        if form.is_valid():
-            rating = form.save(commit=False)
-            rating.user = request.user
-            rating.university = university
-            rating.save()
-            
-            recalculate_university_ranking(university)
 
-            return redirect('universities:detail', university_slug=university.slug)
-    else:
-        form = RatingForm()
-    
-    return render(request, 'universities/rate_university.html', {'form': form, 'university': university})
+@login_required
+def rate_university(request, slug):
+    university = get_object_or_404(University, slug=slug)
+
+    #Check if the user already rated this university
+    existing_rating = Rating.objects.filter(user=request.user, university=university).first()
+    if existing_rating:
+        messages.info(request, "You have already ranked this university. You can update your post or add comments.")
+        return redirect('university_detail', slug=university.slug)
+
+    if request.method == 'POST':
+        safety = request.POST.get('safety')
+        inclusivity = request.POST.get('inclusivity')
+        support = request.POST.get('support')
+        living = request.POST.get('living')
+        equality = request.POST.get('equality')
+
+        rating = Rating(
+            user=request.user,
+            university=university,
+            safety=safety,
+            inclusivity=inclusivity,
+            support=support,
+            living=living,
+            equality=equality
+        )
+        rating.save()
+
+        recalculate_university_ranking(university)
+        messages.success(request, "Your rating has been submitted successfully!")
+        return redirect('university_detail', slug=university.slug)
+
+    return render(request, 'universities/rate.html', {'university': university})
+
 
 def compare_universities(request, slugs):
     slug_list = slugs.split('/')
