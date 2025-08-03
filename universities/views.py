@@ -1,6 +1,6 @@
 # C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Avg, F
+from django.db.models import Avg, F,Count
 from django.contrib.auth.decorators import login_required
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from .models import University, Post, Rating
@@ -12,7 +12,12 @@ def calculate_post_sentiment(text):
     return vs['compound']
 
 def recalculate_university_ranking(university):
+    # 1. Get average scores from female ratings
     female_ratings = Rating.objects.filter(university=university, user__profile__gender='female')
+
+    # Count the number of female ratings using aggregation
+    rating_count = female_ratings.aggregate(count=Count('id'))['count']
+    university.num_ratings = rating_count
 
     if female_ratings.exists():
         avg_scores = female_ratings.aggregate(
@@ -34,6 +39,7 @@ def recalculate_university_ranking(university):
         university.living_score = 0.0
         university.equality_score = 0.0
 
+    # 2. Get average sentiment from all posts (AI analysis)
     all_posts = Post.objects.filter(university=university)
     if all_posts.exists():
         avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score']
@@ -41,14 +47,18 @@ def recalculate_university_ranking(university):
     else:
         university.post_sentiment_score = 0.0
 
-    university.ranking_score = (
-        (university.safety_score * 0.3) +
-        (university.inclusivity_score * 0.2) +
-        (university.support_score * 0.2) +
-        (university.living_score * 0.15) +
-        (university.equality_score * 0.15) +
-        (university.post_sentiment_score * 0.5)
+    # 3. Calculate the final ranking score
+    rating_weight = min(university.num_ratings / 10.0, 1.0)
+    
+    score_from_ratings = (
+        university.safety_score * 0.3 +
+        university.inclusivity_score * 0.2 +
+        university.support_score * 0.2 +
+        university.living_score * 0.15 +
+        university.equality_score * 0.15
     )
+    
+    university.ranking_score = (score_from_ratings * rating_weight) + (university.post_sentiment_score * 0.2)
     
     university.save()
 

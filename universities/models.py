@@ -17,7 +17,6 @@ class University(models.Model):
     living_score = models.FloatField(default=0.0)
     equality_score = models.FloatField(default=0.0)
     
-    # New field to store average post sentiment score
     post_sentiment_score = models.FloatField(default=0.0) 
 
     def __str__(self):
@@ -28,6 +27,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=200)
     content = models.TextField()
+    image = models.ImageField(upload_to='uploads/post_images', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     sentiment_score = models.FloatField(default=0.0, help_text="AI-generated sentiment score.")
@@ -37,7 +37,7 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
+    
 class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     university = models.ForeignKey(University, on_delete=models.CASCADE)
@@ -56,24 +56,6 @@ class Rating(models.Model):
     def __str__(self):
         return f'{self.user.username} rated {self.university.name}'
     
-
-class Post(models.Model):
-    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='posts')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    # Add the ImageField here. 'uploads/post_images' is the subdirectory where files will be stored.
-    image = models.ImageField(upload_to='uploads/post_images', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    sentiment_score = models.FloatField(default=0.0, help_text="AI-generated sentiment score.")
-
-    def __str__(self):
-        return f'{self.title} by {self.author.username}'
-
-    class Meta:
-        ordering = ['-created_at']
-        
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')

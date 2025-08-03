@@ -1,8 +1,3 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}University Rankings{% endblock %}
-
 {% block content %}
     <style>
         .disclaimer-section {
@@ -13,7 +8,9 @@
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
-            font-size: 0.95em;
+        }
+        .disclaimer-section p {
+            margin: 0;
         }
         .add-university-cta {
             background-color: #d1ecf1;
@@ -32,7 +29,6 @@
         }
         .ranking-explanation h2 {
             color: #007bff;
-            margin-bottom: 10px;
         }
         .search-container {
             margin-bottom: 20px;
@@ -43,35 +39,9 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             width: 50%;
-            max-width: 400px;
-        }
-        .search-container button {
-            padding: 10px 15px;
-            margin-left: 8px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .search-container button:hover {
-            background-color: #0056b3;
-        }
-        .reset-button {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-        .reset-button:hover {
-            background-color: #5a6268;
         }
         .filter-container {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
             margin-bottom: 20px;
@@ -88,35 +58,31 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 15px;
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
         }
-        .university-info h3 {
+        .university-card h3 {
             margin: 0;
             color: #333;
         }
-        .university-info p {
+        .university-card p {
             margin: 5px 0;
             color: #777;
         }
         .scores-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             margin-top: 10px;
         }
         .score-badge {
-            background-color: #f8f9fa;
+            background-color: #f0f0f0;
             padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.8em;
-            border: 1px solid #dee2e6;
         }
         .ranking-details {
             text-align: right;
-            min-width: 120px;
         }
         .ranking-details h4 {
             margin: 0;
@@ -129,20 +95,9 @@
             margin-top: 20px;
             gap: 10px;
         }
-        .cta-button {
-            background-color: #007bff;
-            color: white;
-            padding: 8px 14px;
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .cta-button:hover {
-            background-color: #0056b3;
-        }
         .return-to-home-link {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 20px;
         }
         @media (max-width: 768px) {
             .search-container input {
@@ -158,7 +113,7 @@
         }
     </style>
 
-    <div class="disclaimer-section" role="alert">
+    <div class="disclaimer-section">
         <p><strong>Disclaimer:</strong> The data and rankings on this page are for testing and demonstration purposes only. They do not represent the actual safety or quality of these institutions. Please do not use this data for making real-world decisions.</p>
     </div>
 
@@ -186,9 +141,22 @@
 
     <div class="search-container">
         <form method="GET" action="{% url 'universities:list' %}">
-            <input type="text" name="q" placeholder="Search by name..." value="{{ search_query }}" aria-label="Search Universities">
-            <button type="submit">Search</button>
-            <button type="button" class="reset-button" onclick="resetFilters()">Reset</button>
+            <input type="text" name="q" placeholder="Search by name..." value="{{ search_query }}">
+            <button type="submit" class="cta-button">Search</button>
+        </form>
+    </div>
+
+    <div class="filter-container">
+        <form method="GET" action="{% url 'universities:list' %}">
+            <select name="country">
+                <option value="">Filter by Country</option>
+                {% for country in countries %}
+                    <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="min_score" placeholder="Min Score" min="0" max="5" step="0.1" value="{{ min_score }}">
+            <input type="number" name="max_score" placeholder="Max Score" min="0" max="5" step="0.1" value="{{ max_score }}">
+            <button type="submit" class="cta-button">Apply Filters</button>
         </form>
     </div>
 
@@ -208,21 +176,17 @@
                     </div>
                 </div>
                 <div class="ranking-details">
-                    <h4>#{{ forloop.counter }}</h4>
+                    <h4>Rank: {{ forloop.counter }}</h4>
                     <p>Score: {{ university.ranking_score|floatformat:1 }}</p>
-                    <label>
-                        <input type="checkbox" name="compare_slugs" value="{{ university.slug }}"> Compare
-                    </label>
+                    <input type="checkbox" name="compare_slugs" value="{{ university.slug }}"> Compare
                 </div>
             </div>
         {% empty %}
-            <p style="text-align:center; font-weight:bold;">⚠️ No universities found matching your criteria.</p>
+            <p style="text-align: center;">No universities found matching your criteria. Try adding one in the admin panel!</p>
         {% endfor %}
-        {% if universities %}
         <div class="comparison-buttons">
             <button type="button" class="cta-button" onclick="compareSelected()">Compare Selected</button>
         </div>
-        {% endif %}
     </form>
 
     <div class="return-to-home-link">
@@ -237,12 +201,7 @@
                 alert('Please select at least two universities to compare.');
                 return;
             }
-            const compareUrl = "{% url 'universities:compare' slugs='PLACEHOLDER' %}".replace('PLACEHOLDER', slugs.join('/'));
-            window.location.href = compareUrl;
-        }
-
-        function resetFilters() {
-            window.location.href = "{% url 'universities:list' %}";
+            window.location.href = `{% url 'universities:compare' slugs=slugs.join('/') %}`;
         }
     </script>
 {% endblock %}
