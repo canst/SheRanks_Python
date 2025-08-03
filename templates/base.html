@@ -232,6 +232,28 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            header, main, footer {
+                padding: 10px;
+            }
+            .nav-auth {
+                position: static;
+                text-align: center;
+                margin-top: 10px;
+            }
+            .hero-section {
+                height: 300px;
+            }
+            .university-grid, .main-info-grid, .team-container {
+                grid-template-columns: 1fr;
+            }
+            .university-card, .team-member-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>

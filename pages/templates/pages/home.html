@@ -5,21 +5,21 @@
 
 {% block content %}
     <section class="hero-section">
-        <div class="slide active" style="background-image: url('{% static "empowerher.png" %}');">
+        <div class="slide active" style="background-image: url('{% static "images/empowerher.png" %}');">
             <div class="slide-text">
                 <h2>Promote Campus Safety</h2>
                 <p>Share your experiences and help us rank universities based on safety for female students.</p>
                 <a href="{% url 'accounts:register' %}" class="cta-button">Join Our Community</a>
             </div>
         </div>
-        <div class="slide" style="background-image: url('{% static "sheranksmission.png" %}');">
+        <div class="slide" style="background-image: url('{% static "images/sheranksmission.png" %}');">
             <div class="slide-text">
                 <h2>Empower Every Voice</h2>
                 <p>Your reviews contribute to a more transparent and accountable higher education system.</p>
                 <a href="{% url 'universities:list' %}" class="cta-button">Explore Universities</a>
             </div>
         </div>
-        <div class="slide" style="background-image: url('{% static "sheranksabout.png" %}');">
+        <div class="slide" style="background-image: url('{% static "images/sheranksabout.png" %}');">
             <div class="slide-text">
                 <h2>Support a Safer Future</h2>
                 <p>Help us support students affected by harassment and violence on campus.</p>
@@ -69,7 +69,7 @@
 
         <section id="about" class="section">
             <h2>Our Mission</h2>
-            <div class="image-banner" style="background-image: url('{% static "sheranksmission.png" %}');"></div>
+            <div class="image-banner" style="background-image: url('{% static "images/sheranksmission.png" %}');"></div>
             <p>{{ mission_statement }}</p>
             <p><strong>Objectives:</strong></p>
             <ul>
@@ -108,7 +108,7 @@
             </div>
         </section>
     </main>
-    
+
     <script>
         // Hero Section Slideshow
         const slides = document.querySelectorAll('.slide');
