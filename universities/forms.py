@@ -1,6 +1,7 @@
 # C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\forms.py
 from django import forms
-from .models import Rating, Post, Comment # Add Comment to this line
+from .models import Rating, Post, Comment, University 
+
 
 class RatingForm(forms.ModelForm):
     class Meta:
@@ -26,7 +27,7 @@ class CommentForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Write a comment...'}),
         }
-        
+
 class UniversityForm(forms.ModelForm):
     class Meta:
         model = University
