@@ -7,6 +7,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from .models import University, Post, Rating
 from .forms import RatingForm, PostForm, CommentForm, UniversityForm
 
+
 def calculate_post_sentiment(text):
     analyzer = SentimentIntensityAnalyzer()
     vs = analyzer.polarity_scores(text)
@@ -161,38 +162,32 @@ def create_post(request, university_slug):
 
 
 @login_required
-def rate_university(request, slug):
-    university = get_object_or_404(University, slug=slug)
+def rate_university(request, university_slug):
+    university = get_object_or_404(University, slug=university_slug)
 
-    #Check if the user already rated this university
+    # Check if the user already rated this university
     existing_rating = Rating.objects.filter(user=request.user, university=university).first()
     if existing_rating:
         messages.info(request, "You have already ranked this university. You can update your post or add comments.")
-        return redirect('university_detail', slug=university.slug)
+        return redirect('universities:detail', university_slug=university.slug)
 
     if request.method == 'POST':
-        safety = request.POST.get('safety')
-        inclusivity = request.POST.get('inclusivity')
-        support = request.POST.get('support')
-        living = request.POST.get('living')
-        equality = request.POST.get('equality')
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.user = request.user
+            rating.university = university
+            rating.save()
 
-        rating = Rating(
-            user=request.user,
-            university=university,
-            safety=safety,
-            inclusivity=inclusivity,
-            support=support,
-            living=living,
-            equality=equality
-        )
-        rating.save()
+            # Recalculate ranking after new rating
+            recalculate_university_ranking(university)
 
-        recalculate_university_ranking(university)
-        messages.success(request, "Your rating has been submitted successfully!")
-        return redirect('university_detail', slug=university.slug)
+            messages.success(request, "Your rating has been submitted successfully!")
+            return redirect('universities:detail', university_slug=university.slug)
+    else:
+        form = RatingForm()
 
-    return render(request, 'universities/rate.html', {'university': university})
+    return render(request, 'universities/rate_university.html', {'university': university, 'form': form})
 
 
 def compare_universities(request, slugs):
@@ -213,7 +208,7 @@ def compare_view(request, slugs):
     from .models import University
     universities = University.objects.filter(slug__in=slug_list)
 
-    return render(request, 'universities/compare.html', {'universities': universities})
+    return render(request, 'universities/compare_universities.html', {'universities': universities})
 
 
 @login_required
