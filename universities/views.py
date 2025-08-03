@@ -11,12 +11,12 @@ def calculate_post_sentiment(text):
     vs = analyzer.polarity_scores(text)
     return vs['compound']
 
+
 def recalculate_university_ranking(university):
     # 1. Get average scores from female ratings
     female_ratings = Rating.objects.filter(university=university, user__profile__gender='female')
 
-    # Count the number of female ratings using aggregation
-    rating_count = female_ratings.aggregate(count=Count('id'))['count']
+    rating_count = female_ratings.aggregate(count=Count('id'))['count'] or 0
     university.num_ratings = rating_count
 
     if female_ratings.exists():
@@ -42,8 +42,8 @@ def recalculate_university_ranking(university):
     # 2. Get average sentiment from all posts (AI analysis)
     all_posts = Post.objects.filter(university=university)
     if all_posts.exists():
-        avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score']
-        university.post_sentiment_score = avg_sentiment if avg_sentiment is not None else 0.0
+        avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score'] or 0.0
+        university.post_sentiment_score = avg_sentiment
     else:
         university.post_sentiment_score = 0.0
 
@@ -58,9 +58,18 @@ def recalculate_university_ranking(university):
         university.equality_score * 0.15
     )
     
-    university.ranking_score = (score_from_ratings * rating_weight) + (university.post_sentiment_score * 0.2)
+    # Adjust weights so they sum to 1 (example: posts weighted 20%, ratings 80%)
+    university.ranking_score = (score_from_ratings * rating_weight * 0.8) + (university.post_sentiment_score * 0.2)
     
     university.save()
+
+    # 4. Update ranks for all universities sorted by ranking_score desc (best score = rank 1)
+    universities = University.objects.all().order_by('-ranking_score', '-num_ratings')
+    for index, uni in enumerate(universities, start=1):
+        if uni.rank != index:
+            uni.rank = index
+            uni.save(update_fields=['rank'])
+
 
 def university_list(request):
     universities = University.objects.all().order_by('-ranking_score')
