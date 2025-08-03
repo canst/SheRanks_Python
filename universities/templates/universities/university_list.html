@@ -5,6 +5,26 @@
 
 {% block content %}
     <style>
+        .disclaimer-section {
+            background-color: #ffeeba;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .disclaimer-section p {
+            margin: 0;
+        }
+        .add-university-cta {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .ranking-explanation {
             background-color: #e9ecef;
             padding: 20px;
@@ -86,6 +106,20 @@
         }
     </style>
 
+    <div class="disclaimer-section">
+        <p><strong>Disclaimer:</strong> The data and rankings on this page are for testing and demonstration purposes only. They do not represent the actual safety or quality of these institutions. Please do not use this data for making real-world decisions.</p>
+    </div>
+
+    <div class="add-university-cta">
+        <h2>Your university is missing?</h2>
+        <p>You can add it to the list and help improve the ranking for everyone.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'universities:add_university' %}" class="cta-button">Add a University</a>
+        {% else %}
+            <a href="{% url 'accounts:register' %}" class="cta-button">Register to Add Your University</a>
+        {% endif %}
+    </div>
+
     <div class="ranking-explanation">
         <h2>Global University Rankings</h2>
         <p>Our ranking is a comprehensive and data-driven score based on user feedback. It is a composite of the following parameters:</p>
@@ -105,26 +139,13 @@
         </form>
     </div>
 
-    <div class="filter-container">
-        <form method="GET" action="{% url 'universities:list' %}">
-            <select name="country">
-                <option value="">Filter by Country</option>
-                {% for country in countries %}
-                    <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country }}</option>
-                {% endfor %}
-            </select>
-            <input type="number" name="min_score" placeholder="Min Score" min="0" max="5" step="0.1" value="{{ min_score }}">
-            <input type="number" name="max_score" placeholder="Max Score" min="0" max="5" step="0.1" value="{{ max_score }}">
-            <button type="submit" class="cta-button">Apply Filters</button>
-        </form>
-    </div>
-
     <form id="compare-form">
         {% for university in universities %}
             <div class="university-card">
                 <div class="university-info">
                     <h3><a href="{% url 'universities:detail' university.slug %}">{{ university.name }}</a></h3>
                     <p>{{ university.location }}</p>
+                    <p>{{ university.num_ratings }} ratings</p>
                     <div class="scores-container">
                         <span class="score-badge">Safety: {{ university.safety_score|floatformat:1 }}</span>
                         <span class="score-badge">Inclusivity: {{ university.inclusivity_score|floatformat:1 }}</span>
@@ -159,8 +180,7 @@
                 alert('Please select at least two universities to compare.');
                 return;
             }
-            window.location.href = `/universities/compare/${slugs.join('/')}/`;
-
+            window.location.href = `{% url 'universities:compare' slugs=slugs.join('/') %}`;
         }
     </script>
 {% endblock %}
