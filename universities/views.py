@@ -169,6 +169,17 @@ def compare_universities(request, slugs):
     }
     return render(request, 'universities/compare_universities.html', context)
 
+from django.shortcuts import render
+
+def compare_view(request, slugs):
+    slug_list = slugs.split(',')
+    # Fetch universities based on slugs
+    from .models import University
+    universities = University.objects.filter(slug__in=slug_list)
+
+    return render(request, 'universities/compare.html', {'universities': universities})
+
+
 @login_required
 def add_university(request):
     if request.method == 'POST':
