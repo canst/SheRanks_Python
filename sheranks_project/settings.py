@@ -30,8 +30,8 @@ INSTALLED_APPS = [
     'universities', 
     'pages',
     'accounts',
-    'rest_framework',
-    'rrf_spectacular',
+    'rest_framework',        # Add Django REST Framework
+    'drf_spectacular',       # Add for API documentation
 ]
 
 MIDDLEWARE = [
