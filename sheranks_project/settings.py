@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'universities', 
     'pages',
     'accounts',
+    'rest_framework',
+    'rrf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -87,3 +89,7 @@ LOGIN_REDIRECT_URL = '/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}

@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from .models import University, Post, Rating
 from .forms import RatingForm, PostForm, CommentForm, UniversityForm
+from rest_framework import viewsets
+from .serializers import UniversitySerializer, PostSerializer, RatingSerializer, CommentSerializer
 
 
 def calculate_post_sentiment(text):
@@ -222,3 +224,22 @@ def add_university(request):
         form = UniversityForm()
     
     return render(request, 'universities/add_university.html', {'form': form})
+
+
+
+
+class UniversityViewSet(viewsets.ModelViewSet):
+    queryset = University.objects.all()
+    serializer_class = UniversitySerializer
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+class RatingViewSet(viewsets.ModelViewSet):
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
