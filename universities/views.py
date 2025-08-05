@@ -1,23 +1,20 @@
 # C:\Users\soyam\Documents\GitHub\SheRanks_Python\universities\views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Avg, F,Count
+from django.db.models import Avg, F, Count
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from .models import University, Post, Rating
-from .forms import RatingForm, PostForm, CommentForm, UniversityForm
 from rest_framework import viewsets
-from .serializers import UniversitySerializer, PostSerializer, RatingSerializer, CommentSerializer
-
+from .models import University, Post, Rating, Comment # Add Comment
+from .forms import RatingForm, PostForm, CommentForm, UniversityForm
 
 def calculate_post_sentiment(text):
     analyzer = SentimentIntensityAnalyzer()
     vs = analyzer.polarity_scores(text)
     return vs['compound']
 
-
 def recalculate_university_ranking(university):
-    # 1. Get average scores from female ratings
+    # Get average scores from female ratings
     female_ratings = Rating.objects.filter(university=university, user__profile__gender='female')
 
     rating_count = female_ratings.aggregate(count=Count('id'))['count'] or 0
@@ -43,15 +40,13 @@ def recalculate_university_ranking(university):
         university.living_score = 0.0
         university.equality_score = 0.0
 
-    # 2. Get average sentiment from all posts (AI analysis)
     all_posts = Post.objects.filter(university=university)
     if all_posts.exists():
-        avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score'] or 0.0
-        university.post_sentiment_score = avg_sentiment
+        avg_sentiment = all_posts.aggregate(avg_score=Avg('sentiment_score'))['avg_score']
+        university.post_sentiment_score = avg_sentiment if avg_sentiment is not None else 0.0
     else:
         university.post_sentiment_score = 0.0
 
-    # 3. Calculate the final ranking score
     rating_weight = min(university.num_ratings / 10.0, 1.0)
     
     score_from_ratings = (
@@ -62,18 +57,9 @@ def recalculate_university_ranking(university):
         university.equality_score * 0.15
     )
     
-    university.ranking_score = (score_from_ratings * rating_weight * 0.8) + (university.post_sentiment_score * 0.2)
+    university.ranking_score = (score_from_ratings * rating_weight) + (university.post_sentiment_score * 0.2)
     
     university.save()
-
-    # 4. Update ranks for all universities sorted by ranking_score desc (best score = rank 1)
-    universities = University.objects.all().order_by('-ranking_score', '-num_ratings')
-    for index, uni in enumerate(universities, start=1):
-        if uni.rank != index:
-            uni.rank = index
-            uni.save(update_fields=['rank'])
-
-
 
 def university_list(request):
     universities = University.objects.all().order_by('-ranking_score')
@@ -103,7 +89,6 @@ def university_list(request):
     }
     return render(request, 'universities/university_list.html', context)
 
-
 def university_detail(request, university_slug):
     university = get_object_or_404(University, slug=university_slug)
     all_universities = list(University.objects.all().order_by('-ranking_score'))
@@ -111,14 +96,8 @@ def university_detail(request, university_slug):
         rank = all_universities.index(university) + 1
     except ValueError:
         rank = "N/A"
-
     posts = Post.objects.filter(university=university).order_by('-created_at')
-
-    #Check if the user has already rated this university
-    has_rated = False
-    if request.user.is_authenticated:
-        has_rated = Rating.objects.filter(user=request.user, university=university).exists()
-
+    
     if request.method == 'POST':
         if request.user.is_authenticated:
             comment_form = CommentForm(request.POST)
@@ -127,6 +106,7 @@ def university_detail(request, university_slug):
                 comment.post = get_object_or_404(Post, id=request.POST.get('post_id'))
                 comment.author = request.user
                 comment.save()
+                messages.success(request, 'Your comment has been added!')
                 return redirect('universities:detail', university_slug=university.slug)
     else:
         comment_form = CommentForm()
@@ -136,10 +116,8 @@ def university_detail(request, university_slug):
         'posts': posts,
         'rank': rank,
         'comment_form': comment_form,
-        'has_rated': has_rated,  #Pass to template
     }
     return render(request, 'universities/university_detail.html', context)
-
 
 @login_required
 def create_post(request, university_slug):
@@ -162,36 +140,33 @@ def create_post(request, university_slug):
     
     return render(request, 'universities/create_post.html', {'form': form, 'university': university})
 
-
 @login_required
 def rate_university(request, university_slug):
     university = get_object_or_404(University, slug=university_slug)
-
-    # Check if the user already rated this university
+    
     existing_rating = Rating.objects.filter(user=request.user, university=university).first()
-    if existing_rating:
-        messages.info(request, "You have already ranked this university. You can update your post or add comments.")
-        return redirect('universities:detail', university_slug=university.slug)
 
     if request.method == 'POST':
-        form = RatingForm(request.POST)
+        form = RatingForm(request.POST, instance=existing_rating)
         if form.is_valid():
             rating = form.save(commit=False)
             rating.user = request.user
             rating.university = university
             rating.save()
-
-            # Recalculate ranking after new rating
+            
             recalculate_university_ranking(university)
-
-            messages.success(request, "Your rating has been submitted successfully!")
+            messages.success(request, "Your rating has been updated successfully!")
             return redirect('universities:detail', university_slug=university.slug)
     else:
-        form = RatingForm()
+        form = RatingForm(instance=existing_rating)
 
-    return render(request, 'universities/rate_university.html', {'university': university, 'form': form})
-
-
+    context = {
+        'form': form,
+        'university': university,
+        'existing_rating': existing_rating,
+    }
+    return render(request, 'universities/rate_university.html', context)
+    
 def compare_universities(request, slugs):
     slug_list = slugs.split('/')
     universities = University.objects.filter(slug__in=slug_list)
@@ -200,33 +175,6 @@ def compare_universities(request, slugs):
         'universities': universities
     }
     return render(request, 'universities/compare_universities.html', context)
-
-from django.shortcuts import render
-
-
-def compare_view(request, slugs):
-    slug_list = slugs.split(',')
-    # Fetch universities based on slugs
-    from .models import University
-    universities = University.objects.filter(slug__in=slug_list)
-
-    return render(request, 'universities/compare_universities.html', {'universities': universities})
-
-
-@login_required
-def add_university(request):
-    if request.method == 'POST':
-        form = UniversityForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('universities:list')
-    else:
-        form = UniversityForm()
-    
-    return render(request, 'universities/add_university.html', {'form': form})
-
-
-
 
 class UniversityViewSet(viewsets.ModelViewSet):
     queryset = University.objects.all()
